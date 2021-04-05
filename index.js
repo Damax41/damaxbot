@@ -6,13 +6,13 @@ var dispatcher;
 client.login(process.env.TOKEN);
 
 client.on("ready", () => {
-	console.log(`Le bot est connecté, avec ${client.users.size} utilisateurs, dans ${client.channels.size} channels de ${client.guilds.size} serveurs.`); 
+	console.log(`Le bot est connecté, avec ${client.users.size} utilisateurs.`); 
 	client.user.setActivity("42 || >>help");
 });
 
 client.on("guildMemberAdd", member => {
 	member.createDM().then(channel => {
-		return channel.send("Bienvenue dans le serveur **Damax** " + member.displayName);
+		return channel.send("Bienvenue dans le serveur **ADV Team** " + member.displayName);
 	}).catch(console.error)
 });
 
@@ -334,7 +334,7 @@ client.on("message", async message => {
 	}
 	
 	if(command === "giverole") {
-		if(!message.member.roles.some(r=>["Damax41 ☄️"].includes(r.name)) )
+		if(!message.member.roles.some(r=>["no so specially"].includes(r.name)) )
 		return message.reply({embed: {
 			color: 15700514,
 			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
