@@ -6,14 +6,18 @@ var dispatcher;
 client.login(process.env.TOKEN);
 
 client.on("ready", () => {
-	console.log(`Le bot est connecté, avec ${client.users.size} utilisateurs.`); 
+	console.log(`Le bot est connecté.`); 
 	client.user.setActivity("42 || >>help");
 });
 
-client.on("guildMemberAdd", member => {
-	member.createDM().then(channel => {
-		return channel.send("Bienvenue dans le serveur **ADV Team** " + member.displayName);
-	}).catch(console.error)
+client.on("guildMemberAdd", member => { 
+	const roleStart = member.guild.roles.cache.find(role => role.id === '413823407709356034');
+	member.roles.add(roleStart);
+	try{
+	member.send("Hey!\nBienvenue sur le serveur *ADV Team*")
+	} catch(e){
+		client.channels.cache.find(channel => channel.id === "514147891619692544").send(`Erreur d'envoie du MP pour <@${member.id}>.`)
+	}
 });
 
 client.on("message", async message => {
@@ -24,11 +28,12 @@ client.on("message", async message => {
 
 	const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
 	const command = args.shift().toLowerCase();
+	const channelLog = client.channels.cache.find(channel => channel.id === "514147891619692544");
 
 	if(command === "help") {
 		message.channel.send({embed: {
 			color: 130,
-			description: `**Liste des commandes :**\n\n\`>>help\`\n *Utilisation: >>help*\n\n\`>>ping\`\n *Utilisation: >>ping*\n\n\`>>say\`\n *Utilisation: >>say La chose à faire dire au bot !*\n\n\`>>poll\`\n *Utilisation : >>poll |Titre du sondage|Proposition 1|Proposition 2|Proposition 3|Proposition 4*\n\n\`>>kick\`\n *Utilisation: >>kick @lenomdumembre#0000 La raison du kick !*\n\n\`>>ban\`\n *Utilisation: >>ban @lenomdumembre#0000 La raison du ban !*\n\n\`>>nuke\`\n *Utilisation: >>nuke Un_nombre_entre_2_et_100*\n\n\`>>warn\`\n *Utilisation: >>warn | @lenomdumembre#0000 La raison du warn !*\n\n\`>>mpto\`\n *Utilisation: >>mpto | @lenomdumembre#0000 Le MP à envoyer*\n\n\`>>play\`\n *Utilisation: >>play URL_de_la_musique*\n\n\`>>pause\`\n *Utilisation: >>pause*\n\n\`>>resume\`\n *Utilisation: >>resume*\n\n\`>>connect\`\n *Utilisation: >>connect*\n\n\`>>disconnect\`\n *Utilisation: >>disconnect*\n\n\`>>report\`\n *Utilisation: >>report @lenomdumembre#0000 La raison du report*\n\n\`>>reportbug\`\n *Utilisation: >>reportbug L'explication du bug report*\n\n\`>>giverole\`\n *Utilisation: >>giverole @lenomdumembre#0000 Le nom du rôle à donner*`
+			description: `**Liste des commandes :**\n\n\`>>help\`\n *Utilisation: >>help*\n\n\`>>ping\`\n *Utilisation: >>ping*\n\n\`>>say\`\n *Utilisation: >>say La chose à faire dire au bot !*\n\n\`>>poll\`\n *Utilisation : >>poll |Titre du sondage|Proposition 1|Proposition 2|Proposition 3|Proposition 4*\n\n\`>>kick\`\n *Utilisation: >>kick @lenomdumembre#0000 La raison du kick !*\n\n\`>>ban\`\n *Utilisation: >>ban @lenomdumembre#0000 La raison du ban !*\n\n\`>>nuke\`\n *Utilisation: >>nuke Un_nombre_entre_2_et_100*\n\n\`>>warn\`\n *Utilisation: >>warn | @lenomdumembre#0000 La raison du warn !*\n\n\`>>mpto\`\n *Utilisation: >>mpto | @lenomdumembre#0000 Le MP à envoyer*\n\n\`>>play\`\n *Utilisation: >>play URL_de_la_musique*\n\n\`>>pause\`\n *Utilisation: >>pause*\n\n\`>>resume\`\n *Utilisation: >>resume*\n\n\`>>connect\`\n *Utilisation: >>connect*\n\n\`>>disconnect\`\n *Utilisation: >>disconnect*\n\n\`>>report\`\n *Utilisation: >>report @lenomdumembre#0000 La raison du report*\n\n\`>>reportbug\`\n *Utilisation: >>reportbug L'explication du bug report*\n\n\`>>giverole\`\n *Utilisation: >>giverole @lenomdumembre#0000 Le nom du rôle à donner*\n\n\`>>removerole\`\n *Utilisation: >>removerole @lenomdumembre#0000 Le nom du rôle à enlever*`
 		}});
 	}
  
@@ -36,17 +41,16 @@ client.on("message", async message => {
 		const m = await message.channel.send("Ping?");
 		m.edit({embed: {
 			color: 33280,
-			description: `Pong! La latence est de ${m.createdTimestamp - message.createdTimestamp}ms.\nLa latence de l'API est de ${Math.round(client.ping)}ms`
+			description: `Pong! La latence est de ${m.createdTimestamp - message.createdTimestamp}ms.`
 		}});
 	}
   
 	if(command === "say") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("ADMINISTRATOR") )
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
 			}});
-
 		const sayMessage = args.join(" ");
 		message.delete().catch(O_o=>{});
 		message.channel.send({embed: {
@@ -56,13 +60,13 @@ client.on("message", async message => {
 	}
   
 	if(command === "kick") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("KICK_MEMBERS") )
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
 			}});
 
-		let member = message.mentions.members.first() || message.guild.members.get(args[0]);
+		let member = message.mentions.members.first();
 		if(!member)
 			return message.reply({embed: {
 				color: 15700514,
@@ -74,7 +78,8 @@ client.on("message", async message => {
 				description: "Je ne peux pas kick ce membre, il peut-être un rôle trop haut ou vous n'avez peut-être pas la permission pour."
 			}});
 
-		let reason = args.slice(1).join(' ');
+		args.shift();
+		let reason = args.join(' ');
 		if(!reason) reason = "Aucune raison fournie !";
     
 		await member.kick(reason)
@@ -82,7 +87,7 @@ client.on("message", async message => {
 				color: 15700514,
 				description: `Désolé ${message.author} je ne peux pas le kick car: ${error}`
 			}}));
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 13107200,
 			description: `${member.user.tag} à été kick par ${message.author.tag} car: ${reason}`
 		}});
@@ -90,7 +95,7 @@ client.on("message", async message => {
 	}
   
 	if(command === "ban") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("BAN_MEMBERS") )
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
@@ -108,7 +113,8 @@ client.on("message", async message => {
 				description: "Je ne peux pas ban ce membre, il peut-être un rôle trop haut ou vous n'avez peut-être pas la permission pour."
 			}});
 
-		let reason = args.slice(1).join(' ');
+		args.shift();
+		let reason = args.join(' ');
 		if(!reason) reason = "Aucune raison fournie !";
     
 		await member.ban(reason)
@@ -116,14 +122,14 @@ client.on("message", async message => {
 				color: 15700514,
 				description: `Désolé ${message.author} je ne peux pas le ban car: ${error}`
 			}}));
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 13107200,
 			description: `${member.user.tag} à été ban par ${message.author.tag} car: ${reason}`
 		}});
 	}
   
 	if(command === "nuke") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("MANAGE_MESSAGES") )
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
@@ -131,27 +137,26 @@ client.on("message", async message => {
 
 		const deleteCount = parseInt(args[0], 10);
     
-		if(!deleteCount || deleteCount < 2 || deleteCount > 100)
+		if(!deleteCount || deleteCount < 1 || deleteCount > 99)
 			return message.reply({embed: {
 				color: 15700514,
-				description: "Mettez un nombre entre 2 et 100 !"
+				description: "Mettez un nombre entre 1 et 99 !"
 			}});
-    
-		const fetched = await message.channel.fetchMessages({limit: deleteCount});
-		message.channel.bulkDelete(fetched)
+
+		message.channel.bulkDelete(deleteCount + 1, true)
 			.catch(error => message.reply({embed: {
 				color: 15700514,
 				description: `Je ne peux pas supprimé les messages car: ${error}`
 			}}));
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 13107200,
-			description: `${message.author.tag} à supprimé ${deleteCount} messages du channel ${message.channel}`
+			description: `${message.author.tag} à supprimé ${deleteCount} messages du channel ${message.channel}.`
 		}});
 	}
 
 	if(command === "poll") {
 		message.delete();		
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("ADMINISTRATOR") )
 		return message.reply({embed: {
 			color: 15700514,
 			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
@@ -208,16 +213,17 @@ client.on("message", async message => {
 	}
 	
 	if(command === "mpto") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("ADMINISTRATOR") )
 		return message.reply({embed: {
 			color: 15700514,
 			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
 		}});
 
-		let mention = message.mentions.members.first();
-		let mentionMessage = message.content.slice(8);
+		let member = message.mentions.members.first();
+		args.shift();
+		let texte = args.join(' ');
 		message.delete();
-		mention.send(mentionMessage);
+		member.send(texte);
 		message.channel.send({embed: {
 			color: 33280,
 			description: `L'envoi a bien été effectué.`
@@ -225,28 +231,27 @@ client.on("message", async message => {
 	}
 	
 	if(command === "warn") {
-		if(!message.member.roles.some(r=>["Staff"].includes(r.name)) )
+		if(!message.member.hasPermission("KICK_MEMBERS") )
 		return message.reply({embed: {
 			color: 15700514,
 			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
 		}});
 
-		let mention = message.mentions.members.first();
-		let mentionMessage = message.content.slice(8);
-		mention.send(`📢 WARN 📢 \n` + mentionMessage);
+		let member = message.mentions.members.first();
+		args.shift();
+		let reason = args.join(" ");
+		if(!reason) reason = "Aucune raison fournie !";
+		member.send(`📢 WARN 📢 \n` + "Vous avez été warn car: " + reason);
 		message.channel.send({embed: {
 			color: 33280,
 			description: `Le warn a bien été effectué.`
 		}});
-		let member = message.mentions.members.first() || message.guild.members.get(args[0]);
-		let reason = args.slice(1).join(' ');
-		if(!reason) reason = "Aucune raison fournie !";
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 13107200,
 			description: `${member.user.tag} à été warn par ${message.author.tag} car: ${reason}`
 		}});
 	}
-	
+/*	
 	if(command === "play") {
 		let urlMusic = message.content.split(" ");
 		
@@ -301,60 +306,110 @@ client.on("message", async message => {
 	if(command === "disconnect") {
 		message.member.voiceChannel.leave();
 	}
-	
+*/
 	if(command === "report") {
-		let member = message.mentions.members.first() || message.guild.members.get(args[0]);
+		let member = message.mentions.members.first();
 		if(!member)
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Mentionnée un membre valide du serveur !"
 			}});
 
-		let reason = args.slice(1).join(' ');
+		args.shift();
+		let reason = args.join(' ');
 		if(!reason) reason = "Aucune raison fournie !";
     
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 13107200,
 			description: `${member.user.tag} à été report par ${message.author.tag} car: ${reason}`
 		}});
 	}
 	
 	if(command === "reportbug") {
-		let reason = args.slice(1).join(' ');
+		let reason = args.join(' ');
 		if(!reason)
 			return message.reply({embed: {
 				color: 15700514,
 				description: "Veillez donné une explication du bug !"
 			}});
     
-		client.channels.get("514147891619692544").send({embed: {
+		channelLog.send({embed: {
 			color: 15700514,
 			description: `Un bug à été report par ${message.author.tag} et le bug est: ${reason}`
 		}});
 	}
 	
 	if(command === "giverole") {
-		if(!message.member.roles.some(r=>["no so specially"].includes(r.name)) )
+		if(!message.member.hasPermission("ADMINISTRATOR") )
 		return message.reply({embed: {
 			color: 15700514,
 			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
 		}});
-  		let rMember = message.guild.member(message.mentions.users.first()) || message.guild.members.get(args[0]);
+
+  		let rMember = message.mentions.users.first();
  		if(!rMember) return message.reply("Je ne touve ce membre !");
-  		let role = args.join(" ").slice(22);
-  		if(!role) return message.reply("Donne le nom du rôle !");
-  		let gRole = message.guild.roles.find(`name`, role);
-  		if(!gRole) return message.reply("Je ne trouve pas le rôle !");
 
-  		if(rMember.roles.has(gRole.id)) return message.reply("Il a maintenant le rôle");
-  		await(rMember.addRole(gRole.id));
+ 		args.shift();
 
-  		try{
-    			await rMember.send(`Bravo, tu as maintenant le rôle ${gRole.name}`)
-  		}catch(e){
-    			message.channel.send(`Bravo à <@${rMember.id}>, il a maintenant le rôle ${gRole.name}. J'ai essayé de lui envoyé un MP, mais c'est MP son bloqué.`)
+  		const roleName = args.join(" ");
+  		const { guild } = message;
+
+  		const gRole = guild.roles.cache.find((role) => {
+  			return role.name === roleName
+  		});
+  		if(!gRole) return message.reply(`Je ne trouve pas le rôle ***${roleName}***!`);
+
+  		const member = guild.members.cache.get(rMember.id);
+  		if(member.roles.cache.get(gRole.id)) {
+  			message.reply(`<@${rMember.id}> à déjà le rôle ***${gRole.name}***`)
+  			console.log(gRole)
+  		} else {
+  			member.roles.add(gRole);
+  			message.reply(`Il a maintenant le rôle ***${roleName}***`);
+
+  			try{
+    			await rMember.send(`Bravo, tu as maintenant le rôle ***${gRole.name}***`)
+  			} catch(e){
+    			message.channel.send(`Bravo à <@${rMember.id}>, il a maintenant le rôle ***${gRole.name}***. J'ai essayé de lui envoyé un MP, mais c'est MP son bloqué.`)
+  			}
   		}
+
 	}
+
+	if(command === "removerole") {
+		if(!message.member.hasPermission("ADMINISTRATOR") )
+		return message.reply({embed: {
+			color: 15700514,
+			description: "Désolé !\nVous n'avez pas la permission pour utiliser cette commande !"
+		}});
+
+  		let rMember = message.mentions.users.first();
+ 		if(!rMember) return message.reply("Je ne touve ce membre !");
+
+ 		args.shift();
+
+  		const roleName = args.join(" ");
+  		const { guild } = message;
+
+  		const gRole = guild.roles.cache.find((role) => {
+  			return role.name === roleName
+  		});
+  		if(!gRole) return message.reply(`Je ne trouve pas le rôle ***${roleName}***!`);
+
+  		const member = guild.members.cache.get(rMember.id);
+  		if(member.roles.cache.get(gRole.id)) {
+  			member.roles.remove(gRole);
+  			message.reply(`<@${rMember.id}> n'a plus le rôle ***${gRole.name}***`)
+
+  			try{
+    			await rMember.send(`Désolé, tu as perdu le rôle ***${gRole.name}***`)
+  			} catch(e){
+    			message.channel.send(`Ouille, <@${rMember.id}> n'a plus le rôle ***${gRole.name}***. J'ai essayé de lui envoyé un MP, mais c'est MP son bloqué.`)
+  			}
+  		} else {
+  			message.reply(`<@${rMember.id}> n'a pas le rôle ***${roleName}***`);
+  		}
+  	}
 });
 
 //By Damax41 :)
