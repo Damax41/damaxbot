@@ -10,15 +10,39 @@ client.on("ready", () => {
 	client.user.setActivity("42 || >>help");
 });
 
-client.on("guildMemberAdd", member => { 
-	const roleStart = member.guild.roles.cache.find(role => role.id === '413823407709356034');
-	member.roles.add(roleStart);
-	try{
-	member.send("Hey!\nBienvenue sur le serveur *ADV Team*")
-	} catch(e){
-		client.channels.cache.find(channel => channel.id === "514147891619692544").send(`Erreur d'envoie du MP pour <@${member.id}>.`)
+client.on('guildMemberAdd', (member) => {
+	const role = member.guild.roles.cache.get(`413823407709356034`)
+	member.roles.add(role)
+})
+
+const handleReaction = (reaction, user, add) => {
+	if (user.id === `411744198791004162`) {
+		return
 	}
-});
+
+	const { guild } = reaction.message
+
+	const role = guild.roles.cache.get(`413823407709356034`)
+	const member = guild.membres.cache.find((member) => member.id === user.id)
+
+	if (add) {
+		member.roles.add(role)
+	} else {
+		member.roles.remove(role)
+	}
+}
+
+client.on(`messageReactionAdd`, async (reaction, user) => {
+	if (reaction.message.channel.id === `413713613186924554`) {
+		handleReaction(reaction, user, true)
+	}
+})
+
+client.on(`messageReactionRemove`, async (reaction, user) => {
+	if (reaction.message.channel.id === `413713613186924554`) {
+		handleReaction(reaction, user, false)
+	}
+})
 
 client.on("message", async message => {
 
