@@ -11,38 +11,32 @@ client.on("ready", () => {
 });
 
 client.on('guildMemberAdd', (member) => {
-	const role = member.guild.roles.cache.get(`413823407709356034`)
-	member.roles.add(role)
-})
+	const role = member.guild.roles.cache.get(`413823407709356034`);
+	member.roles.add(role);
+});
 
 const handleReaction = (reaction, user, add) => {
 	if (user.id === `411744198791004162`) {
 		return
 	}
 
-	const { guild } = reaction.message
+	const { guild } = reaction.message;
 
-	const role = guild.roles.cache.get(`413823407709356034`)
-	const member = guild.membres.cache.find((member) => member.id === user.id)
+	const role = guild.roles.cache.get(`413823407709356034`);
+	const member = guild.membres.cache.find((member) => member.id === user.id);
 
 	if (add) {
-		member.roles.add(role)
+		member.roles.add(role);
 	} else {
-		member.roles.remove(role)
+		member.roles.remove(role);
 	}
-}
+};
 
 client.on(`messageReactionAdd`, async (reaction, user) => {
 	if (reaction.message.channel.id === `413713613186924554`) {
 		handleReaction(reaction, user, true)
 	}
-})
-
-client.on(`messageReactionRemove`, async (reaction, user) => {
-	if (reaction.message.channel.id === `413713613186924554`) {
-		handleReaction(reaction, user, false)
-	}
-})
+});
 
 client.on("message", async message => {
 
